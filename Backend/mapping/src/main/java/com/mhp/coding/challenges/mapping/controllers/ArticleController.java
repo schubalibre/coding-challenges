@@ -1,8 +1,10 @@
 package com.mhp.coding.challenges.mapping.controllers;
 
+import com.mhp.coding.challenges.mapping.exceptions.ArticleNotFoundException;
 import com.mhp.coding.challenges.mapping.models.dto.ArticleDto;
 import com.mhp.coding.challenges.mapping.services.ArticleService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -11,6 +13,7 @@ import java.util.List;
 @RequestMapping("/article")
 public class ArticleController {
 
+    @Autowired
     private final ArticleService articleService;
 
     @Autowired
@@ -18,14 +21,19 @@ public class ArticleController {
         this.articleService = articleService;
     }
 
-    @GetMapping()
+    @GetMapping(produces = "application/json")
     public List<ArticleDto> list() {
         return articleService.list();
     }
 
-    @GetMapping("/{id}")
-    public ArticleDto details(@PathVariable Long id) {
-        return articleService.articleForId(id);
+    @GetMapping(value = "/{id}", produces = "application/json")
+    public ResponseEntity<ArticleDto> details(@PathVariable Long id) {
+        try {
+            ArticleDto article = articleService.articleForId(id);
+            return ResponseEntity.ok(article);
+        } catch (ArticleNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping()
